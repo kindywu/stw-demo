@@ -19,6 +19,16 @@ type Msg struct {
 	Message string `json:"message"`
 }
 
+var pool = sync.Pool{
+	New: func() interface{} {
+		arr := make([]Msg, SIZE)
+		for i := 0; i < SIZE; i++ {
+			arr[i].Message = MESSAGE
+		}
+		return &arr
+	},
+}
+
 func buildMessageArray(num int) []Msg {
 	arr := make([]Msg, num)
 	for i := 0; i < num; i++ {
@@ -41,6 +51,13 @@ func httpHandlerJson(w http.ResponseWriter, r *http.Request) {
 func httpHandlerArray(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	arr := buildMessageArray(SIZE)
+	json.NewEncoder(w).Encode(arr)
+}
+
+func httpHandlerArrayWithPool(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var arr = pool.Get().(*[]Msg)
+	defer pool.Put(arr)
 	json.NewEncoder(w).Encode(arr)
 }
 
@@ -68,6 +85,7 @@ func main() {
 		http.HandleFunc("/", httpHandler)
 		http.HandleFunc("/json", httpHandlerJson)
 		http.HandleFunc("/array", httpHandlerArray)
+		http.HandleFunc("/array_with_pool", httpHandlerArrayWithPool)
 		log.Println("http started on http://127.0.0.1:3000")
 		log.Fatal(http.ListenAndServe(":3000", nil))
 	}()

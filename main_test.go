@@ -14,6 +14,7 @@ import (
 // go test -bench=BenchmarkHttpHandler -benchmem -benchtime=10s -v
 // go test -bench=BenchmarkHttpJson -benchmem -benchtime=10s -v
 // go test -bench=BenchmarkHttpArray -benchmem -benchtime=10s -v
+// go test -bench=BenchmarkHttpArrWithPool -benchmem -benchtime=10s -v
 
 // go test -bench=BenchmarkFiberHandler -benchmem -benchtime=10s -v
 // go test -bench=BenchmarkFiberJson -benchmem -benchtime=10s -v
@@ -23,31 +24,73 @@ var once sync.Once
 
 func BenchmarkHttpHandler(b *testing.B) {
 	req, _ := http.NewRequest("GET", "/1", nil)
-	w := httptest.NewRecorder()
-	for n := 0; n < b.N; n++ {
-		w.Body.Reset()
-		httpHandler(w, req)
-	}
+
+	// for n := 0; n < b.N; n++ {
+	// 	w.Body.Reset()
+	// 	httpHandler(w, req)
+	// }
+
+	b.RunParallel(func(pb *testing.PB) {
+		w := httptest.NewRecorder()
+		for pb.Next() {
+			w.Body.Reset()
+			httpHandler(w, req)
+		}
+	})
 	printStats(b)
 }
 
 func BenchmarkHttpJson(b *testing.B) {
 	req, _ := http.NewRequest("GET", "/1", nil)
-	w := httptest.NewRecorder()
-	for n := 0; n < b.N; n++ {
-		w.Body.Reset()
-		httpHandlerJson(w, req)
-	}
+	// w := httptest.NewRecorder()
+	// for n := 0; n < b.N; n++ {
+	// 	w.Body.Reset()
+	// 	httpHandlerJson(w, req)
+	// }
+
+	b.RunParallel(func(pb *testing.PB) {
+		w := httptest.NewRecorder()
+		for pb.Next() {
+			w.Body.Reset()
+			httpHandlerJson(w, req)
+		}
+	})
 	printStats(b)
 }
 
 func BenchmarkHttpArray(b *testing.B) {
 	req, _ := http.NewRequest("GET", "/1", nil)
-	w := httptest.NewRecorder()
-	for n := 0; n < b.N; n++ {
-		w.Body.Reset() //注释这句会导致w的内存一直无法释放,从而导致GC次数变少
-		httpHandlerArray(w, req)
-	}
+	// w := httptest.NewRecorder()
+	// for n := 0; n < b.N; n++ {
+	// 	w.Body.Reset() //注释这句会导致w的内存一直无法释放,从而导致GC次数变少
+	// 	httpHandlerArray(w, req)
+	// }
+
+	b.RunParallel(func(pb *testing.PB) {
+		w := httptest.NewRecorder()
+		for pb.Next() {
+			w.Body.Reset()
+			httpHandlerArray(w, req)
+		}
+	})
+	printStats(b)
+}
+
+func BenchmarkHttpArrWithPool(b *testing.B) {
+	req, _ := http.NewRequest("GET", "/1", nil)
+	// w := httptest.NewRecorder()
+	// for n := 0; n < b.N; n++ {
+	// 	w.Body.Reset()
+	// 	httpHandlerArrayWithPool(w, req)
+	// }
+
+	b.RunParallel(func(pb *testing.PB) {
+		w := httptest.NewRecorder()
+		for pb.Next() {
+			w.Body.Reset()
+			httpHandlerArrayWithPool(w, req)
+		}
+	})
 	printStats(b)
 }
 
