@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/valyala/fasthttp"
 )
 
 // go test -bench=BenchmarkHttpHandler -benchmem -benchtime=10s -v
@@ -51,36 +52,45 @@ func BenchmarkHttpArray(b *testing.B) {
 }
 
 func BenchmarkFiberHandler(b *testing.B) {
-	req := httptest.NewRequest("GET", "/", nil)
-	app := fiber.New()
-	app.Get("/", fiberHandler)
+	h, fctx := buildFiberHandler(fiberHandler)
+
 	for n := 0; n < b.N; n++ {
-		app.Test(req)
+		h(fctx)
 	}
 
 	printStats(b)
 }
 
 func BenchmarkFiberJson(b *testing.B) {
-	req := httptest.NewRequest("GET", "/", nil)
-	app := fiber.New()
-	app.Get("/", fiberHandlerJson)
+	h, fctx := buildFiberHandler(fiberHandlerJson)
+
 	for n := 0; n < b.N; n++ {
-		app.Test(req)
+		h(fctx)
 	}
 
 	printStats(b)
 }
 
 func BenchmarkFiberArray(b *testing.B) {
-	req := httptest.NewRequest("GET", "/", nil)
-	app := fiber.New()
-	app.Get("/", fiberHandlerArray)
+	h, fctx := buildFiberHandler(fiberHandlerArray)
+
 	for n := 0; n < b.N; n++ {
-		app.Test(req)
+		h(fctx)
 	}
 
 	printStats(b)
+}
+
+func buildFiberHandler(handle func(c fiber.Ctx) error) (fasthttp.RequestHandler, *fasthttp.RequestCtx) {
+	app := fiber.New()
+	app.Get("/", handle)
+
+	h := app.Handler()
+
+	ctx := &fasthttp.RequestCtx{}
+	ctx.Request.Header.SetMethod(fiber.MethodGet)
+	ctx.Request.SetRequestURI("/")
+	return h, ctx
 }
 
 func printStats(b *testing.B) {
