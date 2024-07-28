@@ -76,6 +76,12 @@ func fiberHandlerArray(c fiber.Ctx) error {
 	return c.JSON(arr)
 }
 
+func fiberHandlerArrayWithPool(c fiber.Ctx) error {
+	var arr = pool.Get().(*[]Msg)
+	defer pool.Put(arr)
+	return c.JSON(arr)
+}
+
 func main() {
 	var wg = sync.WaitGroup{}
 	wg.Add(2)
@@ -97,6 +103,7 @@ func main() {
 		app.Get("/", fiberHandler)
 		app.Get("/json", fiberHandlerJson)
 		app.Get("/array", fiberHandlerArray)
+		app.Get("/array_with_pool", fiberHandlerArrayWithPool)
 		log.Fatal(app.Listen(":3001"))
 	}()
 

@@ -19,6 +19,7 @@ import (
 // go test -bench=BenchmarkFiberHandler -benchmem -benchtime=10s -v
 // go test -bench=BenchmarkFiberJson -benchmem -benchtime=10s -v
 // go test -bench=BenchmarkFiberArray -benchmem -benchtime=10s -v
+// go test -bench=BenchmarkFiberArrWithPool -benchmem -benchtime=10s -v
 
 var once sync.Once
 
@@ -97,9 +98,15 @@ func BenchmarkHttpArrWithPool(b *testing.B) {
 func BenchmarkFiberHandler(b *testing.B) {
 	h, fctx := buildFiberHandler(fiberHandler)
 
-	for n := 0; n < b.N; n++ {
-		h(fctx)
-	}
+	// for n := 0; n < b.N; n++ {
+	// 	h(fctx)
+	// }
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			h(fctx)
+		}
+	})
 
 	printStats(b)
 }
@@ -107,9 +114,15 @@ func BenchmarkFiberHandler(b *testing.B) {
 func BenchmarkFiberJson(b *testing.B) {
 	h, fctx := buildFiberHandler(fiberHandlerJson)
 
-	for n := 0; n < b.N; n++ {
-		h(fctx)
-	}
+	// for n := 0; n < b.N; n++ {
+	// 	h(fctx)
+	// }
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			h(fctx)
+		}
+	})
 
 	printStats(b)
 }
@@ -117,9 +130,31 @@ func BenchmarkFiberJson(b *testing.B) {
 func BenchmarkFiberArray(b *testing.B) {
 	h, fctx := buildFiberHandler(fiberHandlerArray)
 
-	for n := 0; n < b.N; n++ {
-		h(fctx)
-	}
+	// for n := 0; n < b.N; n++ {
+	// 	h(fctx)
+	// }
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			h(fctx)
+		}
+	})
+
+	printStats(b)
+}
+
+func BenchmarkFiberArrWithPool(b *testing.B) {
+	h, fctx := buildFiberHandler(fiberHandlerArrayWithPool)
+
+	// for n := 0; n < b.N; n++ {
+	// 	h(fctx)
+	// }
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			h(fctx)
+		}
+	})
 
 	printStats(b)
 }
