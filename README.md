@@ -1,4 +1,4 @@
-# 执行这些进行压力测试
+# 执行以下命令，进行压力测试
 * go test -bench=BenchmarkHttpHandler -benchmem -benchtime=10s -v
 * go test -bench=BenchmarkHttpJson -benchmem -benchtime=10s -v
 * go test -bench=BenchmarkHttpArray -benchmem -benchtime=10s -v
