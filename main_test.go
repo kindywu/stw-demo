@@ -173,8 +173,8 @@ func buildFiberHandler(handle func(c fiber.Ctx) error) (fasthttp.RequestHandler,
 
 func printStats(b *testing.B) {
 	once.Do(func() {
-		// 禁用GC，total_pause为零
-		// debug.SetGCPercent(-1)
+		// debug.SetGCPercent(-1) // 禁用GC，total_pause为零
+		// debug.SetGCPercent(1000) // 内存增长10倍
 	})
 
 	// 获取基准测试后的GC统计信息

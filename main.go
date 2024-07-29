@@ -10,13 +10,38 @@ import (
 	fiber "github.com/gofiber/fiber/v3"
 )
 
-const K = 1025
-const SIZE = 2 * K
-
 const MESSAGE = "Hello, World!"
 
 type Msg struct {
 	Message string `json:"message"`
+}
+
+func httpHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "Hello, World!")
+}
+
+func httpHandlerJson(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	msg := new(Msg)
+	msg.Message = "Hello World"
+	json.NewEncoder(w).Encode(msg)
+}
+
+const K = 1025
+const SIZE = 2 * K
+
+func buildMessageArray(num int) []Msg {
+	arr := make([]Msg, num)
+	for i := 0; i < num; i++ {
+		arr[i].Message = MESSAGE
+	}
+	return arr
+}
+
+func httpHandlerArray(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	arr := buildMessageArray(SIZE)
+	json.NewEncoder(w).Encode(arr)
 }
 
 var pool = sync.Pool{
@@ -27,31 +52,6 @@ var pool = sync.Pool{
 		}
 		return &arr
 	},
-}
-
-func buildMessageArray(num int) []Msg {
-	arr := make([]Msg, num)
-	for i := 0; i < num; i++ {
-		arr[i].Message = MESSAGE
-	}
-	return arr
-}
-
-func httpHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, MESSAGE)
-}
-
-func httpHandlerJson(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	msg := new(Msg)
-	msg.Message = "Hello World"
-	json.NewEncoder(w).Encode(msg)
-}
-
-func httpHandlerArray(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	arr := buildMessageArray(SIZE)
-	json.NewEncoder(w).Encode(arr)
 }
 
 func httpHandlerArrayWithPool(w http.ResponseWriter, r *http.Request) {
